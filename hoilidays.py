@@ -27,7 +27,7 @@ class Holiday:
     def __init__(self,name, date):
         #Your Code Here  
         self.name = name
-        self.date = date 
+        self.date = dt.strptime(date,self.DTF)  
     
     def __str__ (self):
         # String output
@@ -206,7 +206,7 @@ class HolidayList:
         # Cast filter results as list       
         # return your holidays
 
-        filter_year = list(filter(lambda x: x.date.year == year, self.innerHolidays))
+        filter_year = list(filter(lambda x: x.date.isocalendar().year == year, self.innerHolidays))
         filter_week = list(filter(lambda x: x.date.isocalendar().week == week_number, filter_year))
         return filter_week
 
