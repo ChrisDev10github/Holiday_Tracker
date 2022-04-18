@@ -8,6 +8,7 @@ from datetime import timedelta
 from datetime import datetime as dt
 
 
+
 # -------------------------------------------
 # Modify the holiday class to 
 # 1. Only accept Datetime objects for date.
@@ -25,7 +26,7 @@ class Holiday:
     def __init__(self,name, date):
         #Your Code Here  
         self.name = name
-        self.date = dt.strptime(date,self.DTFormat)      
+        self.date = datetime.datetime    
     
     def __str__ (self):
         # String output
@@ -49,7 +50,7 @@ class Holiday:
 
 class HolidayList:
 
-    usDateFormat = '%m-%d-%Y'
+    DTFormat = '%Y-%m-%d'
     
     def __init__(self):
        self.innerHolidays = []
@@ -58,9 +59,9 @@ class HolidayList:
         # Make sure holidayObj is an Holiday Object by checking the type
         # Use innerHolidays.append(holidayObj) to add holiday
         # print to the user that you added a holiday
-        dateadd = holidayObj.date
-        dateaddfinal = dateadd.DTFormat
-        addition = Holiday(holidayObj.name,dateaddfinal)
+        #dateadd = holidayObj.date
+        #dateaddfinal = dateadd.DTFormat
+        addition = Holiday(holidayObj.name,holidayObj.date)
         self.innerHolidays.append(addition)
         print("Successfully added the holiday")
 
@@ -89,8 +90,8 @@ class HolidayList:
         # Use addHoliday function to add holidays to inner list.
         print("This must be a Json File")
         f=open(filelocation)
-        Hjson = json.load(f)               #might be loads
-        dictList = Hjson["Holidays"]
+        h_Dict = json.load(f)               #might be loads
+        dictList = h_Dict["holidays"]
         for hol in dictList:
             addH = Holiday(hol["name"],(hol["date"]))
             self.addHoliday(addH)
@@ -143,26 +144,40 @@ class HolidayList:
 
         for year in years:
             html = f'https://www.timeanddate.com/holidays/us/{year}'
-            html_soup = BeautifulSoup(html, 'html.parser')
+            url = requests.get(html)
+            html_soup = BeautifulSoup(url.text, 'html.parser')
             #table = html_soup.find('table',attrs = {'id':'holidays-table'})    #one layer too high in html?
             table = html_soup.find('tbody')
             #print(table)       weird id attribute
             tablerow = table.find_all('tr')
             for row in tablerow:
                 #date
-                tabledate = row.find('th')            #date is in th tags
-                tabledatestr = tabledate.string
+                tabledate = row.find('th',attrs={'class':'nw'})            #date is in th tags
+                if tabledate != None:
+                    tabledatestr = tabledate.text        #?
                 #name of holiday
                 tablenameholiday = row.find('a')
-                tablenameholidaystr = tablenameholiday.string
-                #if the day is a single digit(ex: 2nd)
-                if tabledatestr[5]==None:
-                    tabledatestr[5]='0'
-                holiday_date =datetime.strptime(f'{year}-{tabledatestr[0:3]}-{tabledatestr[5:6]}',DTFormat) #year,month,day
+                if tablenameholiday != None:
+                    tablenameholidaystr = tablenameholiday.text
 
+
+                #if the day is a single digit(ex: 2nd)
+                #if tabledatestr[5]==None:
+                #    tabledatestr[5]='0'
+                #holiday_date =datetime.strptime(f'{year}-{tabledatestr[0:3]}-{tabledatestr[5:6]}',DTFormat) #year,month,day
+
+                #if tabledate[5]==None:
+                #    tabledate[5]='0'
+                #holiday_date =datetime.strptime(f'{year}-{tabledate[0:3]}-{tabledate[5:6]}',DTFormat) #year,month,day
+
+
+                html_formal='%b %d %Y'
+                date_datetime=datetime(f"{tabledatestr} {year}",html_formal)
                 #checking if holiday is already in list and if not add it 
-                if self.findHoliday(tablenameholidaystr,holiday_date) == None:
-                    self.addHoliday(Holiday(tablenameholidaystr,holiday_date))
+
+                if self.findHoliday(tablenameholidaystr,date_datetime) == None:
+                    insert_holiday = Holiday(tablenameholidaystr,date_datetime)
+                    self.addHoliday(insert_holiday)
 
 
 
@@ -277,7 +292,7 @@ def main():
 
     
     ListofHolidays = HolidayList()      #1
-    ListofHolidays.read_json('hoidays') #2
+    ListofHolidays.read_json('holidays.json') #2
     ListofHolidays.scrapeHolidays()     #3
 
     UserChoosing = True
