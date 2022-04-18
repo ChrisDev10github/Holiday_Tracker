@@ -1,6 +1,7 @@
 from ctypes.wintypes import DWORD
 import datetime
 import json
+from threading import local
 from bs4 import BeautifulSoup
 import requests
 from dataclasses import dataclass
@@ -69,19 +70,30 @@ class HolidayList:
     def findHoliday(self,HolidayName, Date):
         # Find Holiday in innerHolidays
         # Return Holiday                #maybe lambda
-        for aDate in self.innerHolidays:
-            if(aDate.date == Date and HolidayName == aDate.name):
-                print("The Holiday is in the calender")
-                return aDate
+        
+        #for aDate in self.innerHolidays:
+         #   if(aDate.date == Date and HolidayName == aDate.name):
+          #      print("The Holiday is in the calender")
+           #     return aDate
+
+        local_holiday = Holiday(HolidayName,Date)
+        for i in range(0,len(self.innerHolidays)):
+            if self.innerHolidays[i] == local_holiday:
+                return local_holiday
+            else:
+                print("The Holiday is not in the calender")
 
     def removeHoliday(self,HolidayName, Date):
         # Find Holiday in innerHolidays by searching the name and date combination.
         # remove the Holiday from innerHolidays
         # inform user you deleted the holiday
-        if self.findHoliday(HolidayName, Date) == None:
+        
+        #if self.findHoliday(HolidayName, Date) == None:
+        remove_local_holiday = self.findHoliday(HolidayName,Date)
+        if remove_local_holiday == None:
             print("That holiday is not in our record, try again :)")
         else:
-            self.innerHolidays.remove(self.findHoliday(HolidayName, Date))
+            self.innerHolidays.remove(remove_local_holiday)
             print("Successfully removed the holiday")
 
             
@@ -269,7 +281,7 @@ class HolidayList:
             dates.append(previousday)
 
 
-        question = input('Would you like to see this weeks weather [y/n]: ')
+        question = str(input('Would you like to see this weeks weather [y/n]: '))
         if question == 'y':
             weather_List = self.getWeather()
             for i in range(0,len(dates)):
@@ -296,7 +308,7 @@ def main():
     
     ListofHolidays = HolidayList()      #1
     ListofHolidays.read_json('holidays.json') #2
-    ListofHolidays.scrapeHolidays()     #3
+    #ListofHolidays.scrapeHolidays()     #3
 
     UserChoosing = True
 
@@ -309,24 +321,25 @@ def main():
                 3. Save Holiday List
                 4. View Holidays
                 5. Exit''')
-        choice = input('What do you want to do. [1-5]')
+        choice = int(input('What do you want to do. [1-5]: '))
 
         if choice == 1:
-            name = input("What is the holiday name")
-            date = input("What is the holiday date? (In the format of year-month-date)")
-            ListofHolidays.addHoliday(Holiday(name,date))
+            name = str(input("What is the holiday name: "))
+            date = str(input("What is the holiday date? (In the format of year-month-date): "))
+            add = Holiday(name,date)
+            ListofHolidays.addHoliday(add)
 
         if choice == 2:
-            name = input("What is the holiday name")
-            date = input("What is the holiday date? In the format of year-month-date")
+            name = str(input("What is the holiday name: "))
+            date = str(input("What is the holiday date? In the format of year-month-date: "))
             ListofHolidays.removeHoliday(name,date)
 
         if choice == 3:
             ListofHolidays.save_to_json('Updated_HolidayList.json')
         
         if choice == 4:
-            year = input("What year do you want")
-            week = input("What week")
+            year = str(input("What year do you want: "))
+            week = str(input("What week: "))
             ListofHolidays.filter_holidays_by_week(year,week)
         
         if choice == 5:
