@@ -27,7 +27,7 @@ class Holiday:
     def __init__(self,name, date):
         #Your Code Here  
         self.name = name
-        self.date = datetime.datetime    
+        self.date = date 
     
     def __str__ (self):
         # String output
@@ -65,6 +65,7 @@ class HolidayList:
         addition = Holiday(holidayObj.name,holidayObj.date)
         self.innerHolidays.append(addition)
         print("Successfully added the holiday")
+        #print(self.innerHolidays)           #testing
 
 
     def findHoliday(self,HolidayName, Date):
@@ -77,11 +78,12 @@ class HolidayList:
            #     return aDate
 
         local_holiday = Holiday(HolidayName,Date)
-        for i in range(0,len(self.innerHolidays)):
-            if self.innerHolidays[i] == local_holiday:
-                return local_holiday
-            else:
-                print("The Holiday is not in the calender")
+        if local_holiday in self.innerHolidays:
+            for i in range(0,len(self.innerHolidays)):
+                if self.innerHolidays[i] == local_holiday:
+                    return local_holiday
+        else:
+            print("The Holiday is not in the calender")
 
     def removeHoliday(self,HolidayName, Date):
         # Find Holiday in innerHolidays by searching the name and date combination.
@@ -224,36 +226,27 @@ class HolidayList:
 
         #date = datetime.date(2022, 1,1) + timedelta(weeks=weekNum)          #sunday of the weeknumber (the last day of the week)
 
-        url = 'https://community-open-weather-map.p.rapidapi.com/forecast'       #past weather required parameters are lat,lon,dt
-
-        headers = {           #given                                          
-            "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
-            "X-RapidAPI-Key": "fd9874cbeemshfc4a6b08e010a22p13857fjsn0cd5b84b40b3"
-        }
-
-        querystring = {"q":"san francisco,us"}   #given
-
-
         try:
 
-            #weather
-            response = requests.request("GET", url, headers=headers, params=querystring)
+            url = "https://community-open-weather-map.p.rapidapi.com/forecast"          #Given
+
+            querystring = {"q":"san francisco,us"}                                      #Given
+
+            headers = {                                                                 #Given
+	        "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
+	        "X-RapidAPI-Key": "032495499cmsh87a7f851860036ap143e00jsn16c55b0cdc5f"
+            }
+
+            #requests
+            response = requests.request("GET", url, headers=headers, params=querystring)        #Given
             info = response.json()
 
+            #add to weather list
             weather_List = []
-            for i in range(5):          #5 day forecast
+            for i in range(5):  #5 day forecast (using 5 day 3 hr incrament forecast)
                 weather_List.append(info['list'][8*i]['weather'][0]['description'])    
-
-            #print(weatherList)
-            
-            #dates
-            dates = []
-            currentday = datetime.datetime.today()      #todays date
-            dates.append(currentday)
-            for i in range(1,5):                            #the previous 4 days
-                previousday = currentday+timedelta(days=i)
-                dates.append(previousday)
-
+            #print(weather_List)
+        
             return weather_List
 
         except:
@@ -308,7 +301,7 @@ def main():
     
     ListofHolidays = HolidayList()      #1
     ListofHolidays.read_json('holidays.json') #2
-    ListofHolidays.scrapeHolidays()     #3
+    #ListofHolidays.scrapeHolidays()     #3
 
     UserChoosing = True
 
@@ -325,13 +318,13 @@ def main():
 
         if choice == 1:
             name = str(input("What is the holiday name: "))
-            date = str(input("What is the holiday date? (In the format of year-month-date): "))
+            date = input("What is the holiday date?: ")
             add = Holiday(name,date)
             ListofHolidays.addHoliday(add)
 
         if choice == 2:
             name = str(input("What is the holiday name: "))
-            date = str(input("What is the holiday date? In the format of year-month-date: "))
+            date = input("What is the holiday date?: ")
             ListofHolidays.removeHoliday(name,date)
 
         if choice == 3:
