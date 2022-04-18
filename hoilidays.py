@@ -308,7 +308,7 @@ def main():
     
     ListofHolidays = HolidayList()      #1
     ListofHolidays.read_json('holidays.json') #2
-    #ListofHolidays.scrapeHolidays()     #3
+    ListofHolidays.scrapeHolidays()     #3
 
     UserChoosing = True
 
