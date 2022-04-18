@@ -27,7 +27,7 @@ class Holiday:
     def __init__(self,name, date):
         #Your Code Here  
         self.name = name
-        self.date = dt.strptime(date,self.DTF)  
+        self.date = dt.strptime(date,self.DTFormat)  
     
     def __str__ (self):
         # String output
