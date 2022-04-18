@@ -273,7 +273,10 @@ class HolidayList:
         if question == 'y':
             weather_List = self.getWeather()
             for i in range(0,len(dates)):
-                print(f'{dates[i]}{weather_List[i]}')
+                print(f'{fhlist}  {dates[i]}{weather_List[i]}')
+        else:
+            for i in range(0,len(dates)):
+                print(f'{fhlist}  {dates[i]}')
 
 
 
