@@ -252,9 +252,11 @@ class HolidayList:
             info = response.json()
 
             #add to weather list
-            weather_List = []
+            weather_List = {}
             for i in range(5):  #5 day forecast (using 5 day 3 hr incrament forecast)
-                weather_List.append(info['list'][8*i]['weather'][0]['description'])    
+                #weather_List.append(info['list'][8*i]['weather'][0]['description'])    
+                weather_List[dt.strptime(info['list'][8*i]['dt_txt'],'%Y, %m %d')] = info['list'][8*i]['weather'][0]['description']
+
             #print(weather_List)
         
             return weather_List
@@ -283,7 +285,7 @@ class HolidayList:
 
         currentweeknum = currentday.isocalendar()[1]
         fhlist = self.filter_holidays_by_week(currentyr,currentweeknum)
-        holidays_in_week = self.displayHolidaysInWeek(fhlist)
+        #holidays_in_week = self.displayHolidaysInWeek(fhlist)
 
         if len(fhlist) == 0:
             print("No current holidays")
@@ -292,8 +294,12 @@ class HolidayList:
             question = str(input('Would you like to see this weeks weather [y/n]: '))
             if question == 'y':
                 weather_List = self.getWeather()
-                for i in range(0,len(dates)):
-                    print(f'{holidays_in_week[i]}  {dates[i]}{weather_List[i]}')
+
+                print(weather_List)
+                print(fhlist)
+                for i in range(0,len(fhlist)):
+                    
+                    print(f'{fhlist[i].name} {fhlist[i].date} {weather_List[fhlist[i].date]}')
             else:
                 for i in range(0,len(dates)):
                     print(f'{fhlist}  {dates[i]}')
