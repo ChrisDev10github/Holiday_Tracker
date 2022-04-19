@@ -329,13 +329,13 @@ def main():
 
         if choice == 1:
             name = str(input("What is the holiday name: "))
-            date = input("What is the holiday date?: ")
+            date = input("What is the holiday date year-month-day?: ")
             add = Holiday(name,date)
             ListofHolidays.addHoliday(add)
 
         if choice == 2:
             name = str(input("What is the holiday name: "))
-            date = input("What is the holiday date?: ")
+            date = input("What is the holiday date year-month-day?: ")
             ListofHolidays.removeHoliday(name,date)
 
         if choice == 3:
