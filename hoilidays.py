@@ -69,7 +69,7 @@ class HolidayList:
         addition = Holiday(holidayObj.name,dt.strptime(holidayObj.date,'%Y-%m-%d'))
         self.innerHolidays.append(addition)
         print("Successfully added the holiday")
-        print(self.innerHolidays)           #testing
+        #print(self.innerHolidays)           #testing
 
 
     def findHoliday(self,HolidayName, Date):
@@ -141,7 +141,7 @@ class HolidayList:
         #adding into a json dictionary and dump
         json_dict={}
         json_dict["holidays"] = h_list
-        json.dump(json_dict,f)
+        json.dump(json_dict,f,default=str)
         f.close()
         print("Successfully Saved Changes")
         
@@ -178,7 +178,7 @@ class HolidayList:
                     #date
                     tabledate = year + ', ' + row.find('th',attrs={'class':'nw'}).string            #date is in th tags
 
-                    datetimedata = datetime.strptime(tabledate, '%Y, %b %d').date()
+                    datetimedata = datetime.strptime(tabledate, '%Y, %m %d').date()
             
             except:
                 print("Error accesing information")
@@ -216,14 +216,14 @@ class HolidayList:
         #filter_year = list(filter(lambda x: x.date.isocalendar().year == year, self.innerHolidays))           #originally had list(filter)
         #filter_week=list(filter(lambda x:int(x.date.strftime('%U'))==week_number,filter_year))           #originally had list(filter)
         filter_week = list(filter(lambda x: x.date.isocalendar()[1] == week_number and x.date.year == int(year), self.innerHolidays))
-        print(filter_week)
+        #print(filter_week)
         return filter_week
 
     def displayHolidaysInWeek(self,holidayList):
         # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
         # Output formated holidays in the week.             #lambda maybe
         # * Remember to use the holiday __str__ method.   
-        print(holidayList)
+        #print(holidayList)
         for day in holidayList:
             print(str(day))      
 
@@ -280,19 +280,23 @@ class HolidayList:
         for i in range(1,5):                            #the previous 4 days
             previousday = currentday+timedelta(days=i)
             dates.append(previousday)
-        
+
         currentweeknum = currentday.isocalendar()[1]
         fhlist = self.filter_holidays_by_week(currentyr,currentweeknum)
         holidays_in_week = self.displayHolidaysInWeek(fhlist)
 
-        question = str(input('Would you like to see this weeks weather [y/n]: '))
-        if question == 'y':
-            weather_List = self.getWeather()
-            for i in range(0,len(dates)):
-                print(f'{holidays_in_week[i]}  {dates[i]}{weather_List[i]}')
+        if len(fhlist) == 0:
+            print("No current holidays")
         else:
-            for i in range(0,len(dates)):
-                print(f'{fhlist}  {dates[i]}')
+
+            question = str(input('Would you like to see this weeks weather [y/n]: '))
+            if question == 'y':
+                weather_List = self.getWeather()
+                for i in range(0,len(dates)):
+                    print(f'{holidays_in_week[i]}  {dates[i]}{weather_List[i]}')
+            else:
+                for i in range(0,len(dates)):
+                    print(f'{fhlist}  {dates[i]}')
 
 
 
@@ -344,7 +348,7 @@ def main():
         if choice == 4:
             year = str(input("What year do you want: "))
             week = str(input("What week number [1-52] or [type 0 for current week]: "))
-            if week == '0':
+            if week == '0' or week=='':
                 ListofHolidays.viewCurrentWeek()
             else:
                 f_list = ListofHolidays.filter_holidays_by_week(year,int(week))
