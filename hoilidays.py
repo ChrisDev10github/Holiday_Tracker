@@ -2,6 +2,7 @@ from ctypes.wintypes import DWORD
 import datetime
 import json
 from threading import local
+from attr import attributes
 from bs4 import BeautifulSoup
 import requests
 from dataclasses import dataclass
@@ -18,16 +19,18 @@ from datetime import datetime as dt
 # --------------------------------------------
 
 #task in demo
-
+@dataclass
 class Holiday:
-    
-    DTFormat = '%Y-%m-%d'
+    name:str
+    date: datetime
+#    DTFormat = '%Y-%m-%d'
 
       
-    def __init__(self,name, date):
+#    def __init__(self,name, date):
         #Your Code Here  
-        self.name = name
-        self.date = dt.strptime(date,self.DTFormat)  
+#        self.name = name
+#        self.date = datetime(date)
+       
     
     def __str__ (self):
         # String output
@@ -51,7 +54,7 @@ class Holiday:
 
 class HolidayList:
 
-    DTFormat = '%Y-%m-%d'
+    #DTFormat = '%Y-%m-%d'
     
     def __init__(self):
        self.innerHolidays = []
@@ -72,18 +75,20 @@ class HolidayList:
         # Find Holiday in innerHolidays
         # Return Holiday                #maybe lambda
         
-        #for aDate in self.innerHolidays:
-         #   if(aDate.date == Date and HolidayName == aDate.name):
-          #      print("The Holiday is in the calender")
-           #     return aDate
+        for holiday in self.innerHolidays:
+            if(holiday.date == Date and HolidayName == holiday.name):
+                print("The Holiday is in the calender")
+                return holiday
+        if(holiday.date != Date and HolidayName != holiday.name):
+            return None
 
-        local_holiday = Holiday(HolidayName,Date)
-        if local_holiday in self.innerHolidays:
-            for i in range(0,len(self.innerHolidays)):
-                if self.innerHolidays[i] == local_holiday:
-                    return local_holiday
-        else:
-            print("The Holiday is not in the calender")
+        #local_holiday = Holiday(HolidayName,Date)
+        #if local_holiday in self.innerHolidays:
+        #    for i in range(0,len(self.innerHolidays)):
+        #        if self.innerHolidays[i] == local_holiday:
+        #            return local_holiday
+        #else:
+        #    print("The Holiday is not in the calender")
 
     def removeHoliday(self,HolidayName, Date):
         # Find Holiday in innerHolidays by searching the name and date combination.
@@ -157,41 +162,40 @@ class HolidayList:
         DTFormat = '%Y-%m-%d'
 
         for year in years:
-            html = f'https://www.timeanddate.com/holidays/us/{year}'
-            url = requests.get(html)
-            html_soup = BeautifulSoup(url.text, 'html.parser')
-            #table = html_soup.find('table',attrs = {'id':'holidays-table'})    #one layer too high in html?
-            table = html_soup.find('tbody')
-            #print(table)       weird id attribute
-            tablerow = table.find_all('tr')
-            for row in tablerow:
-                #date
-                tabledate = row.find('th',attrs={'class':'nw'})            #date is in th tags
-                if tabledate != None:
-                    tabledatestr = tabledate.text        #?
+            try:
+                html = f'https://www.timeanddate.com/holidays/us/{year}'
+                url = requests.get(html)
+                html_soup = BeautifulSoup(url, 'html.parser')
+                #table = html_soup.find('table',attrs = {'id':'holidays-table'})    #one layer too high in html?
+                table = html_soup.find('tbody', attrs={'id':'holidays-table'})
+                #print(table)       weird id attribute
+                tablerow = table.find_all('tr')
+                attributes = tablerow.find_all('td')        #everything but date
+                for row in tablerow:
+                    #date
+                    tabledate = year + ', ' + row.find('th',attrs={'class':'nw'}).string            #date is in th tags
+
+                    datetimedata = datetime.strptime(tabledate, '%Y, %b %d').date()
+            
+            except:
+                print("Error accesing information")
+
+
+                #if tabledate != None:
+                #    tabledatestr = tabledate.text        #?
                 #name of holiday
-                tablenameholiday = row.find('a')
-                if tablenameholiday != None:
-                    tablenameholidaystr = tablenameholiday.text
+                #tablenameholiday = row.find('a')
+                #if tablenameholiday != None:
+                #    tablenameholidaystr = tablenameholiday.text
 
 
-                #if the day is a single digit(ex: 2nd)
-                #if tabledatestr[5]==None:
-                #    tabledatestr[5]='0'
-                #holiday_date =datetime.strptime(f'{year}-{tabledatestr[0:3]}-{tabledatestr[5:6]}',DTFormat) #year,month,day
-
-                #if tabledate[5]==None:
-                #    tabledate[5]='0'
-                #holiday_date =datetime.strptime(f'{year}-{tabledate[0:3]}-{tabledate[5:6]}',DTFormat) #year,month,day
-
-
-                html_formal='%b %d %Y'
-                date_datetime=datetime(f"{tabledatestr} {year}",html_formal)
+                #html_formal='%b %d %Y'
+                #date_datetime=datetime(f"{tabledatestr} {year}",html_formal)
                 #checking if holiday is already in list and if not add it 
 
-                if self.findHoliday(tablenameholidaystr,date_datetime) == None:
-                    insert_holiday = Holiday(tablenameholidaystr,date_datetime)
-                    self.addHoliday(insert_holiday)
+                #if self.findHoliday(tablenameholidaystr,date_datetime) == None:
+                #    insert_holiday = Holiday(tablenameholidaystr,date_datetime)
+                #    self.addHoliday(insert_holiday)
 
 
 
@@ -206,11 +210,12 @@ class HolidayList:
         # Cast filter results as list       
         # return your holidays
 
-        filter_year = list(filter(lambda x: x.date.isocalendar().year == year, self.innerHolidays))
-        filter_week = list(filter(lambda x: x.date.isocalendar().week == week_number, filter_year))
+        #filter_year = list(filter(lambda x: x.date.isocalendar().year == year, self.innerHolidays))           #originally had list(filter)
+        #filter_week=list(filter(lambda x:int(x.date.strftime('%U'))==week_number,filter_year))           #originally had list(filter)
+        filter_week = filter(lambda x: x.date.isocalendar()[1] == week_number and x.date.year == year, self.innerHolidays)
         return filter_week
 
-    def displayHolidaysInWeek(holidayList):
+    def displayHolidaysInWeek(self,holidayList):
         # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
         # Output formated holidays in the week.             #lambda maybe
         # * Remember to use the holiday __str__ method.   
@@ -260,11 +265,9 @@ class HolidayList:
         # Use your displayHolidaysInWeek function to display the holidays in the week
         # Ask user if they want to get the weather
         # If yes, use your getWeather function and display results
-
+        
         currentyr = datetime.datetime.today().isocalendar().year        
         currentweek = datetime.datetime.today().isocalendar().week
-
-        fhlist = self.filter_holidays_by_week(currentyr,currentweek)
 
         dates = []
         currentday = datetime.datetime.today()      #todays date
@@ -272,13 +275,16 @@ class HolidayList:
         for i in range(1,5):                            #the previous 4 days
             previousday = currentday+timedelta(days=i)
             dates.append(previousday)
-
+        
+        currentweeknum = currentday.isocalendar()[1]
+        fhlist = self.filter_holidays_by_week(currentyr,currentweeknum)
+        holidays_in_week = self.displayHolidaysInWeek(fhlist)
 
         question = str(input('Would you like to see this weeks weather [y/n]: '))
         if question == 'y':
             weather_List = self.getWeather()
             for i in range(0,len(dates)):
-                print(f'{fhlist}  {dates[i]}{weather_List[i]}')
+                print(f'{holidays_in_week[i]}  {dates[i]}{weather_List[i]}')
         else:
             for i in range(0,len(dates)):
                 print(f'{fhlist}  {dates[i]}')
@@ -332,9 +338,13 @@ def main():
         
         if choice == 4:
             year = str(input("What year do you want: "))
-            week = str(input("What week: "))
-            ListofHolidays.filter_holidays_by_week(year,week)
-        
+            week = str(input("What week number [1-52] or [type 0 for current week]: "))
+            if week == '0':
+                ListofHolidays.viewCurrentWeek()
+            else:
+                f_list = ListofHolidays.filter_holidays_by_week(year,int(week))
+                HolidayList.displayHolidaysInWeek(f_list)
+
         if choice == 5:
             print("You are exiting goodbye")
             UserChoosing = False
